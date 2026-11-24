@@ -1,0 +1,743 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="parking_lot_world">
+
+    <!-- =================================================================== -->
+    <!-- CONFIGURACAO DE FISICA, CENA, ILUMINACAO E PISO BASE                -->
+    <!-- =================================================================== -->
+    <physics name="default_physics" default="0" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000.0</real_time_update_rate>
+    </physics>
+
+    <scene>
+      <ambient>0.65 0.65 0.68 1.0</ambient>
+      <background>0.75 0.84 0.94 1.0</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <gui fullscreen="0">
+      <camera name="user_camera">
+        <pose>8.2 7.5 11.5 0.0 0.82 -1.5708</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+
+    <!-- =================================================================== -->
+    <!-- PISO ASFALTADO, ESTACAO INICIAL (0,0) E DEMARCACAO DAS 5 VAGAS      -->
+    <!-- Todas as pinturas sao apenas <visual> (sem colisao) para rolagem    -->
+    <!-- perfeitamente suave do robo sobre o ground_plane.                   -->
+    <!-- Vagas: 3.0 m largura (X) x 5.0 m profundidade (Y de -1.0 a -6.0).   -->
+    <!-- =================================================================== -->
+    <model name="parking_lot_markings">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="markings_link">
+
+        <!-- Camada visual de asfalto escuro cobrindo o estacionamento -->
+        <visual name="asphalt_surface">
+          <pose>8.25 -2.225 0.001 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>19.5 8.15 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.20 0.21 0.23 1.0</ambient>
+            <diffuse>0.24 0.25 0.28 1.0</diffuse>
+            <specular>0.05 0.05 0.05 1.0</specular>
+          </material>
+        </visual>
+
+        <!-- Estacao de Inicio e Retorno em (X = 0.0, Y = 0.0), 1.2 x 1.2 m -->
+        <visual name="base_station_pad">
+          <pose>0.0 0.0 0.003 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.20 1.20 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.08 0.65 0.22 1.0</ambient>
+            <diffuse>0.12 0.78 0.28 1.0</diffuse>
+            <specular>0.10 0.10 0.10 1.0</specular>
+          </material>
+        </visual>
+
+        <!-- Faixa guia pontilhada amarela da entrada das vagas em Y = -1.0 m -->
+        <visual name="corridor_entry_line">
+          <pose>9.0 -1.0 0.0025 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>15.10 0.06 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.85 0.72 0.10 1.0</ambient>
+            <diffuse>0.95 0.80 0.12 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Linhas divisoras brancas das 5 vagas (espessura 0.10 m, comp. 5.0 m) -->
+        <!-- Divisoria 0: X = 1.5 m (borda esquerda da Vaga 1) -->
+        <visual name="spot_divider_x_1_5">
+          <pose>1.5 -3.5 0.003 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 5.0 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1.0</ambient>
+            <diffuse>0.98 0.98 0.98 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Divisoria 1: X = 4.5 m (entre Vaga 1 e Vaga 2) -->
+        <visual name="spot_divider_x_4_5">
+          <pose>4.5 -3.5 0.003 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 5.0 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1.0</ambient>
+            <diffuse>0.98 0.98 0.98 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Divisoria 2: X = 7.5 m (entre Vaga 2 e Vaga 3) -->
+        <visual name="spot_divider_x_7_5">
+          <pose>7.5 -3.5 0.003 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 5.0 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1.0</ambient>
+            <diffuse>0.98 0.98 0.98 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Divisoria 3: X = 10.5 m (entre Vaga 3 e Vaga 4) -->
+        <visual name="spot_divider_x_10_5">
+          <pose>10.5 -3.5 0.003 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 5.0 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1.0</ambient>
+            <diffuse>0.98 0.98 0.98 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Divisoria 4: X = 13.5 m (entre Vaga 4 e Vaga 5) -->
+        <visual name="spot_divider_x_13_5">
+          <pose>13.5 -3.5 0.003 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 5.0 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1.0</ambient>
+            <diffuse>0.98 0.98 0.98 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Divisoria 5: X = 16.5 m (borda direita da Vaga 5) -->
+        <visual name="spot_divider_x_16_5">
+          <pose>16.5 -3.5 0.003 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 5.0 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1.0</ambient>
+            <diffuse>0.98 0.98 0.98 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Linha branca de fundo das vagas em Y = -6.0 m -->
+        <visual name="spots_back_line_y_neg6">
+          <pose>9.0 -6.0 0.003 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>15.10 0.10 0.002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1.0</ambient>
+            <diffuse>0.98 0.98 0.98 1.0</diffuse>
+          </material>
+        </visual>
+
+      </link>
+    </model>
+
+    <!-- =================================================================== -->
+    <!-- PAREDES LIMITROFES DO ESTACIONAMENTO (COM COLISAO ATIVA)            -->
+    <!-- Parede de fundo com face interna em Y = -6.20 m (centro em -6.25,   -->
+    <!-- espessura 0.10 m) para leitura ultrassonica de ~6.02 m nas vagas    -->
+    <!-- livres (sensor posicionado em Y = -0.18 m).                         -->
+    <!-- =================================================================== -->
+    <model name="parking_lot_walls">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="walls_link">
+
+        <!-- Parede de fundo atras das vagas (Y = -6.2 m, comp. 19.5 m, alt. 1.5 m) -->
+        <collision name="back_wall_collision">
+          <pose>8.25 -6.25 0.75 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>19.5 0.10 1.50</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="back_wall_visual">
+          <pose>8.25 -6.25 0.75 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>19.5 0.10 1.50</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.68 0.67 0.64 1.0</ambient>
+            <diffuse>0.78 0.77 0.74 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Parede oposta do corredor em Y = +1.8 m -->
+        <collision name="north_corridor_wall_collision">
+          <pose>8.25 1.85 0.75 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>19.5 0.10 1.50</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="north_corridor_wall_visual">
+          <pose>8.25 1.85 0.75 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>19.5 0.10 1.50</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.68 0.67 0.64 1.0</ambient>
+            <diffuse>0.78 0.77 0.74 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Parede lateral esquerda fechando o perimetro em X = -1.5 m -->
+        <collision name="west_wall_collision">
+          <pose>-1.50 -2.20 0.75 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 8.20 1.50</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="west_wall_visual">
+          <pose>-1.50 -2.20 0.75 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 8.20 1.50</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.68 0.67 0.64 1.0</ambient>
+            <diffuse>0.78 0.77 0.74 1.0</diffuse>
+          </material>
+        </visual>
+
+        <!-- Parede lateral direita fechando o perimetro em X = 18.0 m -->
+        <collision name="east_wall_collision">
+          <pose>18.00 -2.20 0.75 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 8.20 1.50</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="east_wall_visual">
+          <pose>18.00 -2.20 0.75 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.10 8.20 1.50</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.68 0.67 0.64 1.0</ambient>
+            <diffuse>0.78 0.77 0.74 1.0</diffuse>
+          </material>
+        </visual>
+
+      </link>
+    </model>
+
+    <!-- =================================================================== -->
+    <!-- VEICULO 1 (AZUL / PRATA) - ESTACIONADO NA VAGA 1 (X=3.0, Y=-3.5)    -->
+    <!-- Dimensoes: 2.2 m largura (X) x 4.2 m comprimento (Y) x 1.4 m alt.   -->
+    <!-- Frente do veiculo em Y = -3.5 + 2.1 = -1.4 m (leitura ~1.22 m).     -->
+    <!-- =================================================================== -->
+    <model name="car_spot_1_blue">
+      <static>true</static>
+      <pose>3.0 -3.5 0.0 0 0 0</pose>
+      <link name="car_link">
+        <!-- Carroceria inferior: 2.2 x 4.2 x 0.75 m (Z de 0.075 a 0.825 m) -->
+        <collision name="lower_body_collision">
+          <pose>0.0 0.0 0.45 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.20 4.20 0.75</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="lower_body_visual">
+          <pose>0.0 0.0 0.45 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.20 4.20 0.75</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.12 0.28 0.62 1.0</ambient>
+            <diffuse>0.16 0.38 0.82 1.0</diffuse>
+            <specular>0.40 0.40 0.45 1.0</specular>
+          </material>
+        </visual>
+
+        <!-- Cabine superior: 1.9 x 2.4 x 0.65 m (topo em Z = 1.40 m) -->
+        <collision name="cabin_collision">
+          <pose>0.0 -0.20 1.075 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.90 2.40 0.65</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="cabin_visual">
+          <pose>0.0 -0.20 1.075 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.90 2.40 0.65</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.68 0.72 0.78 1.0</ambient>
+            <diffuse>0.80 0.84 0.90 1.0</diffuse>
+            <specular>0.50 0.50 0.55 1.0</specular>
+          </material>
+        </visual>
+
+        <!-- 4 Rodas com colisao e visual -->
+        <collision name="wheel_fl_collision">
+          <pose>-1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_fl_visual">
+          <pose>-1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.10 0.10 1.0</ambient>
+            <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_fr_collision">
+          <pose>1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_fr_visual">
+          <pose>1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.10 0.10 1.0</ambient>
+            <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_rl_collision">
+          <pose>-1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_rl_visual">
+          <pose>-1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.10 0.10 1.0</ambient>
+            <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_rr_collision">
+          <pose>1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_rr_visual">
+          <pose>1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.10 0.10 1.0</ambient>
+            <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- =================================================================== -->
+    <!-- VAGA 2 (X = 6.0, Y = -3.5) -> LIVRE (SEM VEICULO)                   -->
+    <!-- =================================================================== -->
+
+    <!-- =================================================================== -->
+    <!-- VEICULO 2 (VERMELHO) - ESTACIONADO NA VAGA 3 (X=9.0, Y=-3.5)        -->
+    <!-- =================================================================== -->
+    <model name="car_spot_3_red">
+      <static>true</static>
+      <pose>9.0 -3.5 0.0 0 0 0</pose>
+      <link name="car_link">
+        <collision name="lower_body_collision">
+          <pose>0.0 0.0 0.45 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.20 4.20 0.75</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="lower_body_visual">
+          <pose>0.0 0.0 0.45 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.20 4.20 0.75</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.65 0.08 0.08 1.0</ambient>
+            <diffuse>0.85 0.12 0.12 1.0</diffuse>
+            <specular>0.45 0.40 0.40 1.0</specular>
+          </material>
+        </visual>
+
+        <collision name="cabin_collision">
+          <pose>0.0 -0.20 1.075 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.90 2.40 0.65</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="cabin_visual">
+          <pose>0.0 -0.20 1.075 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.90 2.40 0.65</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.55 0.06 0.06 1.0</ambient>
+            <diffuse>0.72 0.10 0.10 1.0</diffuse>
+            <specular>0.45 0.45 0.45 1.0</specular>
+          </material>
+        </visual>
+
+        <collision name="wheel_fl_collision">
+          <pose>-1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_fl_visual">
+          <pose>-1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.10 0.10 1.0</ambient>
+            <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_fr_collision">
+          <pose>1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_fr_visual">
+          <pose>1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.10 0.10 1.0</ambient>
+            <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_rl_collision">
+          <pose>-1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_rl_visual">
+          <pose>-1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.10 0.10 1.0</ambient>
+            <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_rr_collision">
+          <pose>1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_rr_visual">
+          <pose>1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.10 0.10 1.0</ambient>
+            <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- =================================================================== -->
+    <!-- VEICULO 3 (PRETO / CINZA CHUMBO) - ESTACIONADO NA VAGA 4 (X=12.0)   -->
+    <!-- =================================================================== -->
+    <model name="car_spot_4_charcoal">
+      <static>true</static>
+      <pose>12.0 -3.5 0.0 0 0 0</pose>
+      <link name="car_link">
+        <collision name="lower_body_collision">
+          <pose>0.0 0.0 0.45 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.20 4.20 0.75</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="lower_body_visual">
+          <pose>0.0 0.0 0.45 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.20 4.20 0.75</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.14 0.15 0.17 1.0</ambient>
+            <diffuse>0.20 0.22 0.25 1.0</diffuse>
+            <specular>0.45 0.45 0.50 1.0</specular>
+          </material>
+        </visual>
+
+        <collision name="cabin_collision">
+          <pose>0.0 -0.20 1.075 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.90 2.40 0.65</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="cabin_visual">
+          <pose>0.0 -0.20 1.075 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.90 2.40 0.65</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.28 0.30 0.34 1.0</ambient>
+            <diffuse>0.36 0.38 0.42 1.0</diffuse>
+            <specular>0.50 0.50 0.50 1.0</specular>
+          </material>
+        </visual>
+
+        <collision name="wheel_fl_collision">
+          <pose>-1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_fl_visual">
+          <pose>-1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.08 0.08 0.08 1.0</ambient>
+            <diffuse>0.12 0.12 0.12 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_fr_collision">
+          <pose>1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_fr_visual">
+          <pose>1.00 1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.08 0.08 0.08 1.0</ambient>
+            <diffuse>0.12 0.12 0.12 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_rl_collision">
+          <pose>-1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_rl_visual">
+          <pose>-1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.08 0.08 0.08 1.0</ambient>
+            <diffuse>0.12 0.12 0.12 1.0</diffuse>
+          </material>
+        </visual>
+
+        <collision name="wheel_rr_collision">
+          <pose>1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="wheel_rr_visual">
+          <pose>1.00 -1.35 0.32 0 1.570796 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.32</radius>
+              <length>0.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.08 0.08 0.08 1.0</ambient>
+            <diffuse>0.12 0.12 0.12 1.0</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- =================================================================== -->
+    <!-- VAGA 5 (X = 15.0, Y = -3.5) -> LIVRE (SEM VEICULO)                  -->
+    <!-- =================================================================== -->
+
+  </world>
+</sdf>

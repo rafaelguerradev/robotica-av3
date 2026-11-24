@@ -1,0 +1,376 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="parking_inspector_bot">
+
+  <!-- ===================================================================== -->
+  <!-- PROPRIEDADES PARAMETRIZADAS DO ROBO                                   -->
+  <!-- ===================================================================== -->
+  <xacro:property name="chassis_length" value="0.50"/>
+  <xacro:property name="chassis_width" value="0.36"/>
+  <xacro:property name="chassis_height" value="0.18"/>
+  <xacro:property name="chassis_mass" value="3.0"/>
+  <xacro:property name="chassis_z_offset" value="0.135"/>
+
+  <xacro:property name="wheel_radius" value="0.09"/>
+  <xacro:property name="wheel_width" value="0.045"/>
+  <xacro:property name="wheel_mass" value="0.4"/>
+  <xacro:property name="wheel_x_offset" value="-0.08"/>
+  <xacro:property name="wheel_y_offset" value="0.2025"/>
+  <xacro:property name="wheel_z_offset" value="-0.045"/>
+  <xacro:property name="wheel_separation" value="0.405"/>
+  <xacro:property name="wheel_diameter" value="0.18"/>
+
+  <xacro:property name="caster_radius" value="0.045"/>
+  <xacro:property name="caster_mass" value="0.25"/>
+  <xacro:property name="caster_x_offset" value="0.18"/>
+  <xacro:property name="caster_z_offset" value="-0.09"/>
+
+  <xacro:property name="sensor_box_x" value="0.02"/>
+  <xacro:property name="sensor_box_y" value="0.045"/>
+  <xacro:property name="sensor_box_z" value="0.022"/>
+  <xacro:property name="sensor_mass" value="0.03"/>
+
+  <!-- ===================================================================== -->
+  <!-- MACROS DE INERCIA                                                     -->
+  <!-- ===================================================================== -->
+  <xacro:macro name="box_inertia" params="m x y z xyz:='0 0 0' rpy:='0 0 0'">
+    <inertial>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <mass value="${m}"/>
+      <inertia
+        ixx="${(1.0/12.0) * m * (y*y + z*z)}"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="${(1.0/12.0) * m * (x*x + z*z)}"
+        iyz="0.0"
+        izz="${(1.0/12.0) * m * (x*x + y*y)}"/>
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="cylinder_inertia" params="m r h xyz:='0 0 0' rpy:='0 0 0'">
+    <inertial>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <mass value="${m}"/>
+      <inertia
+        ixx="${(1.0/12.0) * m * (3.0*r*r + h*h)}"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="${(1.0/12.0) * m * (3.0*r*r + h*h)}"
+        iyz="0.0"
+        izz="${0.5 * m * r * r}"/>
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="sphere_inertia" params="m r xyz:='0 0 0' rpy:='0 0 0'">
+    <inertial>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <mass value="${m}"/>
+      <inertia
+        ixx="${(2.0/5.0) * m * r * r}"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="${(2.0/5.0) * m * r * r}"
+        iyz="0.0"
+        izz="${(2.0/5.0) * m * r * r}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- ===================================================================== -->
+  <!-- MATERIAIS PARA RVIZ2                                                  -->
+  <!-- ===================================================================== -->
+  <material name="dark_blue">
+    <color rgba="0.08 0.20 0.48 1.0"/>
+  </material>
+
+  <material name="wheel_black">
+    <color rgba="0.12 0.12 0.14 1.0"/>
+  </material>
+
+  <material name="caster_silver">
+    <color rgba="0.72 0.74 0.78 1.0"/>
+  </material>
+
+  <material name="sensor_orange">
+    <color rgba="0.95 0.45 0.08 1.0"/>
+  </material>
+
+  <!-- ===================================================================== -->
+  <!-- FRAME BASE_FOOTPRINT E CHASSI (BASE_LINK)                             -->
+  <!-- ===================================================================== -->
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 ${chassis_z_offset}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+      <material name="dark_blue"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia m="${chassis_mass}" x="${chassis_length}" y="${chassis_width}" z="${chassis_height}"/>
+  </link>
+
+  <!-- ===================================================================== -->
+  <!-- RODAS MOTRIZES (ESQUERDA E DIREITA)                                   -->
+  <!-- ===================================================================== -->
+  <xacro:macro name="drive_wheel" params="prefix y_reflect">
+    <link name="${prefix}_wheel">
+      <visual>
+        <origin xyz="0 0 0" rpy="${pi/2.0} 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+        <material name="wheel_black"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="${pi/2.0} 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+      </collision>
+      <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}" rpy="${pi/2.0} 0 0"/>
+    </link>
+
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${prefix}_wheel"/>
+      <origin xyz="${wheel_x_offset} ${y_reflect * wheel_y_offset} ${wheel_z_offset}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <dynamics damping="0.05" friction="0.05"/>
+    </joint>
+
+    <gazebo reference="${prefix}_wheel">
+      <material>Gazebo/FlatBlack</material>
+      <mu1>1.5</mu1>
+      <mu2>1.5</mu2>
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:drive_wheel prefix="left" y_reflect="1.0"/>
+  <xacro:drive_wheel prefix="right" y_reflect="-1.0"/>
+
+  <!-- ===================================================================== -->
+  <!-- RODA BOBA FRONTAL (CASTER WHEEL)                                      -->
+  <!-- ===================================================================== -->
+  <link name="caster_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${caster_radius}"/>
+      </geometry>
+      <material name="caster_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${caster_radius}"/>
+      </geometry>
+    </collision>
+    <xacro:sphere_inertia m="${caster_mass}" r="${caster_radius}"/>
+  </link>
+
+  <joint name="caster_wheel_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster_wheel"/>
+    <origin xyz="${caster_x_offset} 0.0 ${caster_z_offset}" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="caster_wheel">
+    <material>Gazebo/Grey</material>
+    <mu1>0.001</mu1>
+    <mu2>0.001</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="base_link">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+  <!-- ===================================================================== -->
+  <!-- SENSOR ULTRASSONICO DIREITO (INSPECAO DE VAGAS)                       -->
+  <!-- ===================================================================== -->
+  <link name="ultrasonic_right_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${sensor_box_x} ${sensor_box_y} ${sensor_box_z}"/>
+      </geometry>
+      <material name="sensor_orange"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${sensor_box_x} ${sensor_box_y} ${sensor_box_z}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia m="${sensor_mass}" x="${sensor_box_x}" y="${sensor_box_y}" z="${sensor_box_z}"/>
+  </link>
+
+  <joint name="ultrasonic_right_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic_right_link"/>
+    <origin xyz="0.0 -0.18 0.10" rpy="0 0 -1.570796"/>
+  </joint>
+
+  <!-- ===================================================================== -->
+  <!-- SENSOR ULTRASSONICO FRONTAL (ANTICOLISAO NO CORREDOR)                 -->
+  <!-- ===================================================================== -->
+  <link name="ultrasonic_front_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${sensor_box_x} ${sensor_box_y} ${sensor_box_z}"/>
+      </geometry>
+      <material name="sensor_orange"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${sensor_box_x} ${sensor_box_y} ${sensor_box_z}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia m="${sensor_mass}" x="${sensor_box_x}" y="${sensor_box_y}" z="${sensor_box_z}"/>
+  </link>
+
+  <joint name="ultrasonic_front_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic_front_link"/>
+    <origin xyz="0.25 0.0 0.10" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ===================================================================== -->
+  <!-- PLUGIN GAZEBO: TRACAO DIFERENCIAL                                     -->
+  <!-- ===================================================================== -->
+  <gazebo>
+    <plugin name="diff_drive_controller" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <remapping>cmd_vel:=/cmd_vel</remapping>
+        <remapping>odom:=/odom</remapping>
+      </ros>
+      <update_rate>50.0</update_rate>
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>${wheel_separation}</wheel_separation>
+      <wheel_diameter>${wheel_diameter}</wheel_diameter>
+      <max_wheel_torque>20.0</max_wheel_torque>
+      <max_wheel_acceleration>1.5</max_wheel_acceleration>
+      <command_topic>cmd_vel</command_topic>
+      <odometry_topic>odom</odometry_topic>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_footprint</robot_base_frame>
+      <odometry_source>1</odometry_source>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>true</publish_wheel_tf>
+    </plugin>
+  </gazebo>
+
+  <!-- ===================================================================== -->
+  <!-- PLUGIN GAZEBO: SENSOR ULTRASSONICO DIREITO (/ultrasonic/right)        -->
+  <!-- ===================================================================== -->
+  <gazebo reference="ultrasonic_right_link">
+    <material>Gazebo/Orange</material>
+    <sensor name="ultrasonic_right_sensor" type="ray">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>20.0</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>5</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.10</min_angle>
+            <max_angle>0.10</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.025</min_angle>
+            <max_angle>0.025</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.05</min>
+          <max>7.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="ultrasonic_right_plugin" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=/ultrasonic/right</remapping>
+        </ros>
+        <output_type>sensor_msgs/Range</output_type>
+        <radiation_type>ultrasound</radiation_type>
+        <frame_name>ultrasonic_right_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ===================================================================== -->
+  <!-- PLUGIN GAZEBO: SENSOR ULTRASSONICO FRONTAL (/ultrasonic/front)        -->
+  <!-- ===================================================================== -->
+  <gazebo reference="ultrasonic_front_link">
+    <material>Gazebo/Orange</material>
+    <sensor name="ultrasonic_front_sensor" type="ray">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>20.0</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>5</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.10</min_angle>
+            <max_angle>0.10</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.025</min_angle>
+            <max_angle>0.025</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.05</min>
+          <max>5.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="ultrasonic_front_plugin" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=/ultrasonic/front</remapping>
+        </ros>
+        <output_type>sensor_msgs/Range</output_type>
+        <radiation_type>ultrasound</radiation_type>
+        <frame_name>ultrasonic_front_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
