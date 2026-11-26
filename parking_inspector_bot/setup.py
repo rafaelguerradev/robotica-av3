@@ -50,6 +50,7 @@ setup(
             'patrol_navigator = parking_inspector_bot.patrol_navigator_node:main',
             'ultrasonic_detector = parking_inspector_bot.ultrasonic_detector_node:main',
             'central_monitor = parking_inspector_bot.central_monitor_node:main',
+            'hardware_bridge = parking_inspector_bot.hardware_bridge_node:main',
         ],
     },
 )

@@ -29,11 +29,15 @@ class CentralMonitorNode(Node):
 
         self.declare_parameter('spots_x', [3.0, 6.0, 9.0, 12.0, 15.0])
         self.declare_parameter('spots_center_y', -3.5)
+        self.declare_parameter('spot_width_m', 2.80)
+        self.declare_parameter('spot_length_m', 4.80)
         self.declare_parameter('json_output_path', '/tmp/parking_central_status.json')
 
         raw_spots_x = self.get_parameter('spots_x').value
         self.spots_x: List[float] = [float(x) for x in raw_spots_x]
         self.spots_center_y: float = float(self.get_parameter('spots_center_y').value)
+        self.spot_width_m: float = float(self.get_parameter('spot_width_m').value)
+        self.spot_length_m: float = float(self.get_parameter('spot_length_m').value)
         self.json_output_path: str = str(self.get_parameter('json_output_path').value)
 
         # Estado consolidado das 5 vagas
@@ -121,6 +125,16 @@ class CentralMonitorNode(Node):
         if spot_id not in self.spots_data:
             self.get_logger().warn(f'ID de vaga desconhecido recebido: {spot_id}')
             return
+
+        if 'vaga_largura_m' in payload and 'vaga_comprimento_m' in payload:
+            largura_dinamica = float(payload['vaga_largura_m'])
+            comprimento_dinamico = float(payload['vaga_comprimento_m'])
+            self.spot_width_m = max(0.20, largura_dinamica * 0.94)
+            self.spot_length_m = max(0.20, comprimento_dinamico)
+            self.spots_center_y = -(0.15 + 0.5 * comprimento_dinamico)
+            for idx_vaga, vaga_dict in self.spots_data.items():
+                vaga_dict['center_x'] = round(idx_vaga * largura_dinamica, 3)
+                vaga_dict['center_y'] = round(self.spots_center_y, 3)
 
         self.spots_data[spot_id].update(
             {
@@ -282,8 +296,8 @@ class CentralMonitorNode(Node):
             cube.pose.orientation.y = 0.0
             cube.pose.orientation.z = 0.0
             cube.pose.orientation.w = 1.0
-            cube.scale.x = 2.80
-            cube.scale.y = 4.80
+            cube.scale.x = self.spot_width_m
+            cube.scale.y = self.spot_length_m
             cube.scale.z = 0.08
 
             if status == 'LIVRE':

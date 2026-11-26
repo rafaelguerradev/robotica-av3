@@ -47,12 +47,14 @@ parking_inspector_bot/
 ├── rviz/
 │   └── parking_monitor.rviz
 ├── launch/
-│   └── sim_complete.launch.py
+│   ├── sim_complete.launch.py
+│   └── physical_prototype.launch.py
 └── parking_inspector_bot/
     ├── __init__.py
     ├── patrol_navigator_node.py
     ├── ultrasonic_detector_node.py
-    └── central_monitor_node.py
+    ├── central_monitor_node.py
+    └── hardware_bridge_node.py
 ```
 
 ---
@@ -142,4 +144,24 @@ ros2 topic echo /ultrasonic/right
 
 # Consultar o arquivo JSON consolidado do Sistema Central
 cat /tmp/parking_central_status.json
+```
+
+---
+
+## 7. Operação com o Protótipo Físico (ESP32-WROOM-32)
+
+Para integrar o protótipo real (pasta `../firmware_prototipo/`) ao **Sistema Central de Monitoramento** e ao **RViz2** via porta serial USB (`115200` baud):
+
+```bash
+sudo apt install -y python3-serial
+colcon build --symlink-install --packages-select parking_inspector_bot
+source install/setup.bash
+
+# Inicia a ponte serial (/dev/ttyUSB0), o painel central e o RViz2 ao vivo
+ros2 launch parking_inspector_bot physical_prototype.launch.py serial_port:=/dev/ttyUSB0
+
+# Opcional: disparar inicio da missao ou ajustar dimensoes das vagas fisicas via ROS2
+ros2 topic pub --once /esp32_command std_msgs/msg/String "{data: 'START'}"
+ros2 topic pub --once /esp32_command std_msgs/msg/String "{data: 'SET_LARGURA:1.60'}"
+ros2 topic pub --once /esp32_command std_msgs/msg/String "{data: 'SET_COMPRIMENTO:0.68'}"
 ```
